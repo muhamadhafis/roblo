@@ -1,113 +1,120 @@
-import React, { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
-import * as THREE from "three";
+import React from "react";
+import { Canvas } from "@react-three/fiber";
+import { Sky } from "@react-three/drei";
 import { EntityRenderer } from "../3d/EntityRenderer";
+import { CharacterController } from "../character/CharacterController";
+import { ThirdPersonCamera } from "../character/ThirdPersonCamera";
+import { ThrowPadZone } from "../world/ThrowPadZone";
+import { AnimalPenZone } from "../world/AnimalPenZone";
 import { useGameStore } from "../../store/gameStore";
 
-const AnimatedBurger: React.FC = () => {
-  const burgerRef = useRef<THREE.Group>(null);
-  const { isThrowing } = useGameStore();
-
-  useFrame((state) => {
-    if (burgerRef.current && isThrowing) {
-      burgerRef.current.position.z += 0.2;
-      burgerRef.current.rotation.x += 0.1;
-      burgerRef.current.rotation.y += 0.1;
-    }
-  });
-
-  return (
-    <group ref={burgerRef} position={[0, 1.2, 0]}>
-      <EntityRenderer
-        category="food"
-        assetId="burger"
-        grade="NORMAL"
-        scale={0.8}
-      />
-    </group>
-  );
-};
-
 export const GameCanvas: React.FC = () => {
+  const { isInThrowZone, throwFoodAtDistance, maxDistance } = useGameStore();
+
+  const handleFieldClick = (e: any) => {
+    e.stopPropagation();
+    if (!isInThrowZone) return;
+
+    // Klik pada bidang tanah: Ambil jarak Z ke depan
+    const clickZ = Math.max(3, Math.min(maxDistance, e.point.z));
+    throwFoodAtDistance(clickZ, 101);
+  };
+
   return (
     <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
       <Canvas
-        camera={{ position: [0, 4, -8], fov: 50 }}
+        camera={{ position: [0, 5, -8], fov: 55 }}
         shadows
         style={{ width: "100%", height: "100%" }}
       >
         <Sky sunPosition={[100, 40, 100]} />
         <ambientLight intensity={0.7} />
-        <directionalLight position={[10, 20, 15]} intensity={1.2} castShadow />
+        <directionalLight position={[15, 25, 20]} intensity={1.3} castShadow />
 
-        {/* Karakter Pemain di Pangkal */}
-        <EntityRenderer
-          category="player"
-          assetId="player"
-          position={[0, 0, 0]}
-          scale={1}
-        />
+        {/* Third-Person Dynamic Camera Follow */}
+        <ThirdPersonCamera />
 
-        {/* Proyektil Makanan */}
-        <AnimatedBurger />
+        {/* Karakter Pemain yang Dapat Digerakkan (WASD, Shift, Space) */}
+        <CharacterController />
 
-        {/* Hewan-Hewan Zona 1 (Meadow Farm) */}
+        {/* Area Lingkaran Khusus Lempar (Throw Pad Zone) */}
+        <ThrowPadZone />
+
+        {/* Area Kandang Hewan (Animal Pen) Penghasil Passive MPS */}
+        <AnimalPenZone />
+
+        {/* Hewan Target Zona 1 (Klik Langsung untuk Melempar Makanan) */}
         {/* Kelinci di jarak 6m */}
-        <EntityRenderer
-          category="animal"
-          assetId="rabbit"
-          grade="NORMAL"
+        <group
           position={[-1.5, 0, 6]}
           rotation={[0, Math.PI, 0]}
-          scale={1}
-        />
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isInThrowZone) throwFoodAtDistance(6, 101);
+          }}
+        >
+          <EntityRenderer
+            category="animal"
+            assetId="rabbit"
+            grade="NORMAL"
+            scale={1}
+          />
+        </group>
 
         {/* Ayam Emas di jarak 12m */}
-        <EntityRenderer
-          category="animal"
-          assetId="chicken"
-          grade="EMAS"
+        <group
           position={[1.5, 0, 12]}
           rotation={[0, Math.PI, 0]}
-          scale={1}
-        />
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isInThrowZone) throwFoodAtDistance(12, 102);
+          }}
+        >
+          <EntityRenderer
+            category="animal"
+            assetId="chicken"
+            grade="EMAS"
+            scale={1}
+          />
+        </group>
 
         {/* Domba Besar di jarak 18m */}
-        <EntityRenderer
-          category="animal"
-          assetId="sheep"
-          grade="BESAR"
+        <group
           position={[0, 0, 18]}
           rotation={[0, Math.PI, 0]}
-          scale={1}
-        />
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isInThrowZone) throwFoodAtDistance(18, 103);
+          }}
+        >
+          <EntityRenderer
+            category="animal"
+            assetId="sheep"
+            grade="BESAR"
+            scale={1}
+          />
+        </group>
 
-        {/* Lantai Lapangan (Meadow Zone Ground) */}
+        {/* Lantai Lapangan Rumput (Meadow Zone Ground) */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[0, -0.01, 20]}
           receiveShadow
+          onClick={handleFieldClick}
         >
-          <planeGeometry args={[20, 60]} />
+          <planeGeometry args={[40, 70]} />
           <meshStandardMaterial color="#4ade80" roughness={0.8} />
         </mesh>
 
-        {/* Area Berdiri Pemain (Stone Platform) */}
+        {/* Lantai Hub Utama */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, 0, 0]}
+          position={[5, -0.02, 0]}
           receiveShadow
         >
-          <circleGeometry args={[2.5, 32]} />
-          <meshStandardMaterial color="#94a3b8" roughness={0.6} />
+          <planeGeometry args={[25, 20]} />
+          <meshStandardMaterial color="#cbd5e1" roughness={0.6} />
         </mesh>
-
-        <OrbitControls
-          maxPolarAngle={Math.PI / 2.1}
-          minDistance={3}
-          maxDistance={30}
-        />
       </Canvas>
     </div>
   );

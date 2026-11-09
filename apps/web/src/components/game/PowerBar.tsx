@@ -5,7 +5,7 @@ export const PowerBar: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
   const [currentPower, setCurrentPower] = useState(0);
   const chargeRef = useRef<number | null>(null);
-  const { throwFood, maxDistance } = useGameStore();
+  const { throwFoodAtDistance, maxDistance } = useGameStore();
 
   useEffect(() => {
     if (isCharging) {
@@ -44,8 +44,7 @@ export const PowerBar: React.FC = () => {
     if (!isCharging) return;
     setIsCharging(false);
     const finalRatio = sanitizeThrowPower(currentPower);
-    useGameStore.getState().setPowerRatio(finalRatio);
-    throwFood();
+    throwFoodAtDistance(finalRatio * maxDistance);
     setCurrentPower(0);
   };
 

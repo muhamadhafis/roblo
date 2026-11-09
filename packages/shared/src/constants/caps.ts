@@ -10,6 +10,14 @@ export const CAPS = {
   THROW_COOLDOWN_MS: 1200, // Minimum 1.2 detik antar lemparan
   MAX_DISTANCE_TOLERANCE: 1.05, // Toleransi desinkronisasi 5%
   DICE_MAX_SLOTS: 100_000,
+  PEN_CAPACITY_BASE: 6,
+  PEN_CAPACITY_MAX: 20,
+  THROW_PAD_CENTER_X: 0,
+  THROW_PAD_CENTER_Z: 0,
+  THROW_PAD_RADIUS: 3.5, // Radius toleransi interaksi lempar
+  PEN_CENTER_X: 10,
+  PEN_CENTER_Z: 0,
+  PEN_RADIUS: 3.5, // Radius interaksi taruh hewan ke kandang
 } as const;
 
 export interface ZoneConfig {

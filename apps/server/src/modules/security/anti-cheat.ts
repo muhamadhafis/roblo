@@ -101,4 +101,65 @@ export class AntiCheatValidator {
 
     return { valid: true };
   }
+
+  /**
+   * Memvalidasi bahwa pemain berada di dalam radius Throw Pad (0, 0) saat melempar makanan.
+   */
+  public static validateThrowPadProximity(playerPos?: {
+    x: number;
+    z: number;
+  }): SecurityValidationResult {
+    if (!playerPos) {
+      return {
+        valid: false,
+        code: "MISSING_PLAYER_POSITION",
+        message: "Posisi pemain diperlukan untuk validasi area lempar",
+      };
+    }
+
+    const dx = playerPos.x - CAPS.THROW_PAD_CENTER_X;
+    const dz = playerPos.z - CAPS.THROW_PAD_CENTER_Z;
+    const distSq = dx * dx + dz * dz;
+
+    if (distSq > CAPS.THROW_PAD_RADIUS * CAPS.THROW_PAD_RADIUS) {
+      return {
+        valid: false,
+        code: "NOT_IN_THROW_PAD_ZONE",
+        message:
+          "Anda harus berada di dalam lingkaran Throw Pad untuk melempar makanan",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Memvalidasi bahwa pemain berada di dekat area Kandang (10, 0) saat menaruh hewan.
+   */
+  public static validatePenProximity(playerPos?: {
+    x: number;
+    z: number;
+  }): SecurityValidationResult {
+    if (!playerPos) {
+      return {
+        valid: false,
+        code: "MISSING_PLAYER_POSITION",
+        message: "Posisi pemain diperlukan untuk validasi area kandang",
+      };
+    }
+
+    const dx = playerPos.x - CAPS.PEN_CENTER_X;
+    const dz = playerPos.z - CAPS.PEN_CENTER_Z;
+    const distSq = dx * dx + dz * dz;
+
+    if (distSq > CAPS.PEN_RADIUS * CAPS.PEN_RADIUS) {
+      return {
+        valid: false,
+        code: "NOT_IN_PEN_ZONE",
+        message: "Anda harus berada di dekat pagar kandang untuk menaruh hewan",
+      };
+    }
+
+    return { valid: true };
+  }
 }

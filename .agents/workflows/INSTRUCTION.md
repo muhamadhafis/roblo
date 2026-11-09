@@ -47,11 +47,25 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
 
 ---
 
-## Phase 2B: Frontend 3D Procedural-First (`apps/web`)
+## Phase 2B: Frontend 3D Procedural-First (`apps/web`) [COMPLETED]
 - **Step 2B.1**: Inisialisasi struktur workspace `apps/web` dengan Vite, React 18/19, Three.js, R3F, Drei, dan Zustand.
 - **Step 2B.2**: Implementasi `GradeMaterialFactory` untuk 5 grade material (Normal, Besar, Emas, Berlian, Rubi).
 - **Step 2B.3**: Bangun komponen primitif prosedural hewan Zona 1 (`ProceduralChicken`, `ProceduralRabbit`, `ProceduralSheep`) dan makanan (`ProceduralBurger`).
 - **Step 2B.4**: Implementasi Adapter Pattern (`EntityRenderer` & `ProceduralRegistry`) dengan toggle `ASSET_SOURCE_MODE`.
-- **Step 2B.5**: Buat HUD Power Bar dan R3F Game Canvas dengan controller lempar terhubung ke WebSocket port 3444.
-- **Step 2B.6**: Buat automated unit tests (`tests/unit/grade-materials.test.ts`, `tests/unit/procedural-registry.test.ts`) dan security test (`tests/security/client-input-sanitizer.security.test.ts`).
+- **Step 2B.5**: Buat HUD Power Bar dan R3F Game Canvas dengan controller lempar terhubung ke WebSocket port 3444 (Frontend port 3445).
+- **Step 2B.6**: Buat automated unit tests (`tests/unit/grade-materials.test.ts`) dan security test (`tests/security/client-input-sanitizer.security.test.ts`).
 - **Step 2B.7**: Jalankan seluruh rangkaian test suite, format kode, dan verifikasi hasil.
+
+---
+
+## Phase 2C: Kontrol Karakter Roblox, Throw Pad, Carry Hewan, dan Kandang Pasif (MPS)
+- **Step 2C.1**: Perbarui shared package (`packages/shared`): konstanta radius zona, formula MPS, kapasitas kandang.
+- **Step 2C.2**: Perbarui schema database & migrasi tabel `pen_animals` pada PostgreSQL port 5444.
+- **Step 2C.3**: Implementasi `PenService` pada backend Bun (`apps/server`) dengan transaksi ACID dan validasi kedekatan proximity anti-cheat.
+- **Step 2C.4**: Implementasi controller karakter Roblox (`CharacterController`) di `apps/web` (WASD gerak, Shift sprint, Space lompat, third-person camera follow).
+- **Step 2C.5**: Implementasi `ThrowPadZone` (lempar klik mouse) dan `AnimalPenZone` (kandang interaktif dengan display floating MPS).
+- **Step 2C.6**: Implementasi visual `Carry State` di mana karakter mengangkat model hewan di atas kepala.
+- **Step 2C.7**: Buat automated tests:
+  - Unit test alur bisnis MPS (`tests/unit/pen-mps.test.ts`).
+  - Security test anti-cheat proximity spoofing (`tests/security/pen-proximity-spoofing.security.test.ts`).
+- **Step 2C.8**: Jalankan seluruh pengujian, audit formatter Prettier, dan verifikasi.

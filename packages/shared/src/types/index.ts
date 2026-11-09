@@ -32,8 +32,23 @@ export interface InventoryItem {
   caughtAt: string;
 }
 
+export interface PenAnimal {
+  id: string;
+  playerId: string;
+  animalId: number;
+  grade: Grade;
+  placedAt: string;
+  mpsRate: number;
+}
+
 export type WebSocketAction =
-  "THROW_FOOD" | "SYNC_AFK" | "SELL_ANIMALS" | "UPGRADE_STAT" | "GET_PLAYER";
+  | "THROW_FOOD"
+  | "SYNC_AFK"
+  | "SELL_ANIMALS"
+  | "UPGRADE_STAT"
+  | "GET_PLAYER"
+  | "PLACE_IN_PEN"
+  | "CLAIM_PEN_MPS";
 
 export interface ClientMessage<T = unknown> {
   action: WebSocketAction;
@@ -45,6 +60,16 @@ export interface ThrowFoodPayload {
   zoneId: number;
   distance: number;
   targetAnimalId: number;
+  playerPos?: { x: number; z: number };
+}
+
+export interface PlaceInPenPayload {
+  inventoryItemId: string;
+  playerPos: { x: number; z: number };
+}
+
+export interface ClaimPenMpsPayload {
+  playerPos?: { x: number; z: number };
 }
 
 export interface SyncAfkPayload {

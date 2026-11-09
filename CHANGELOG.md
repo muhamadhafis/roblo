@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **Phase 2C (Roblox Character Controller, Throw Pad, Carry Animal, & Pen MPS)**:
+  - Kontroler gerak karakter Roblox 3D (`WASD`, `Shift` sprint, `Space` lompat) dengan smooth third-person camera.
+  - Implementasi *Throw Pad Zone*: Lempar proyektil beralih menjadi mode klik langsung (tanpa tahan spasi) hanya saat pemain berdiri di dalam lingkaran pad.
+  - Implementasi *Carry State*: Karakter secara visual mengangkat hewan hasil tangkapan di atas kepala.
+  - Implementasi *Kandang Hewan (Animal Pen / Coop)*: Pemain dapat menaruh hewan ke kandang (tekan `E` atau klik) untuk menghasilkan koin otomatis per detik (*Money Per Second / MPS*).
+  - Tabel `pen_animals` pada PostgreSQL port 5444 & `PenService` dengan transaksi ACID.
+  - Unit test alur bisnis MPS (`tests/unit/pen-mps.test.ts`) dan security test proximity anti-cheat (`tests/security/pen-proximity-spoofing.security.test.ts`).
 - **Phase 2B (Frontend 3D Procedural-First)**:
   - Inisialisasi workspace `apps/web` berbasis Vite, React 18, Three.js, R3F, Drei, dan Zustand.
   - Implementasi `GradeMaterialFactory` untuk generator shader real-time (Normal, Besar, Emas, Berlian, Rubi).

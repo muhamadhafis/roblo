@@ -9,6 +9,8 @@ import {
   type SyncAfkPayload,
   type SellAnimalsPayload,
   type UpgradeStatPayload,
+  type PlaceInPenPayload,
+  type ClaimPenMpsPayload,
   calculateMaxDistance,
   rollAnimalGrade,
 } from "@nomnom/shared";
@@ -17,6 +19,7 @@ import {
   type PlayerSecurityContext,
 } from "./modules/security/anti-cheat";
 import { PlayerService } from "./services/player.service";
+import { PenService } from "./services/pen.service";
 
 const securityContexts: Map<string, PlayerSecurityContext> = new Map();
 
@@ -140,6 +143,21 @@ export const app = new Elysia()
               return;
             }
 
+            // Validasi Area Lempar (Throw Pad Proximity)
+            if (payload.playerPos) {
+              const padCheck = AntiCheatValidator.validateThrowPadProximity(
+                payload.playerPos,
+              );
+              if (!padCheck.valid) {
+                ws.send({
+                  success: false,
+                  error: { code: padCheck.code, message: padCheck.message },
+                  nonce: message.nonce,
+                });
+                return;
+              }
+            }
+
             // Validasi Akses Zona
             const zoneCheck = AntiCheatValidator.validateZoneAccess(
               payload.zoneId,
@@ -224,13 +242,62 @@ export const app = new Elysia()
             break;
           }
 
+          case "PLACE_IN_PEN": {
+            const payload = message.payload as PlaceInPenPayload;
+
+            // Validasi proximity pemain ke kandang
+            const penProximityCheck = AntiCheatValidator.validatePenProximity(
+              payload.playerPos,
+            );
+            if (!penProximityCheck.valid) {
+              ws.send({
+                success: false,
+                error: {
+                  code: penProximityCheck.code,
+                  message: penProximityCheck.message,
+                },
+                nonce: message.nonce,
+              });
+              return;
+            }
+
+            const result = await PenService.placeAnimalInPen(
+              player.id,
+              payload.inventoryItemId,
+            );
+            const penState = await PenService.getPenState(player.id);
+
+            ws.send({
+              success: true,
+              data: {
+                placedItem: result.placedItem,
+                mpsRate: result.mpsRate,
+                penState,
+              },
+              nonce: message.nonce,
+            });
+            break;
+          }
+
+          case "CLAIM_PEN_MPS": {
+            const result = await PenService.claimPenYield(player.id);
+            ws.send({
+              success: true,
+              data: result,
+              nonce: message.nonce,
+            });
+            break;
+          }
+
           case "GET_PLAYER":
           default: {
+            const penState = await PenService.getPenState(player.id);
             ws.send({
               success: true,
               data: {
                 player,
                 maxDistance: calculateMaxDistance(Number(player.strength)),
+                penState,
               },
               nonce: message.nonce,
             });

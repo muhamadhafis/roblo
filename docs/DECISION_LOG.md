@@ -31,3 +31,12 @@
 - **Konteks**: Diperlukan ORM yang ringan, zero-overhead, dan mendukung transaksi ACID dengan row-level lock (`SELECT ... FOR UPDATE`) pada PostgreSQL 16 di runtime Bun.
 - **Keputusan**: Menggunakan `drizzle-orm` dengan driver `postgres` (porsager).
 - **Konsekuensi**: Menghilangkan latency query builder dan memastikan type safety terhubung langsung dengan schema.
+
+## ADR-005: Roblox Movement Controller, Throw Pad Zone, dan Animal Pen MPS
+- **Status**: Diterima
+- **Konteks**: Diperlukan gameplay loop yang adiktif dan dinamis layaknya game Roblox (misal: Tycoon/Simulator) di mana pemain bergerak bebas, melompat, membawa hewan hasil tangkapan, dan menaruhnya di kandang untuk passive income.
+- **Keputusan**:
+  - Tombol `Space` dikhususkan untuk melompat (Jump), bukan lagi untuk melempar makanan.
+  - Aksi lempar dipindahkan ke mode klik langsung saat berada di dalam *Throw Pad Zone* (radius 3.5m di koordinat `[0, 0, 0]`).
+  - Menambahkan area kandang di koordinat `[10, 0, 0]` dengan tabel `pen_animals` untuk memproduksi passive Money Per Second (MPS).
+- **Konsekuensi**: Backend memvalidasi kedekatan koordinat (`validateThrowPadProximity` dan `validatePenProximity`) untuk mencegah eksploitasi remote packet injection.

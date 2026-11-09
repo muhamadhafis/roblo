@@ -29,6 +29,9 @@ export const players = pgTable(
     lastPullupSync: timestamp("last_pullup_sync", { withTimezone: true })
       .defaultNow()
       .notNull(),
+    lastPenMpsClaim: timestamp("last_pen_mps_claim", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -107,4 +110,24 @@ export const currencyLedger = pgTable(
       .notNull(),
   },
   (table) => [index("idx_ledger_player").on(table.playerId, table.createdAt)],
+);
+
+// 6. Kandang Hewan (Animal Pen / Coop) - Passive MPS Generator
+export const penAnimals = pgTable(
+  "pen_animals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    animalId: integer("animal_id")
+      .notNull()
+      .references(() => animals.id),
+    grade: varchar("grade", { length: 16 }).notNull(),
+    mpsRate: numeric("mps_rate", { precision: 18, scale: 2 }).notNull(),
+    placedAt: timestamp("placed_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("idx_pen_player").on(table.playerId)],
 );

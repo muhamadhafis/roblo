@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { Player, InventoryItem, Grade, ZoneConfig } from "@nomnom/shared";
-import { calculateMaxDistance, ZONES } from "@nomnom/shared";
+import type { Player, InventoryItem, ZoneConfig } from "@nomnom/shared";
+import { calculateMaxDistance, ZONES, CAPS } from "@nomnom/shared";
 
 export interface GameState {
   player: Player | null;
@@ -10,16 +10,25 @@ export interface GameState {
   maxDistance: number;
   isConnected: boolean;
   isThrowing: boolean;
-  powerRatio: number;
   socket: WebSocket | null;
   lastCaughtItem: InventoryItem | null;
   errorNotice: string | null;
 
+  // Roblox Movement & Interactive State
+  playerPosition: { x: number; y: number; z: number };
+  carriedAnimal: InventoryItem | null;
+  isInThrowZone: boolean;
+  isInPenZone: boolean;
+  penAnimals: any[];
+  totalMps: number;
+
   // Actions
   connect: () => void;
-  setPowerRatio: (ratio: number) => void;
+  setPlayerPosition: (pos: { x: number; y: number; z: number }) => void;
   setSelectedZoneId: (zoneId: number) => void;
-  throwFood: (targetAnimalId?: number) => void;
+  throwFoodAtDistance: (distance: number, targetAnimalId?: number) => void;
+  placeInPen: () => void;
+  claimPenMps: () => void;
   syncAfk: (action: "START" | "STOP" | "CLAIM") => void;
   sellAnimals: (quickSellAll?: boolean) => void;
   upgradeStat: (type: "FOOD" | "PULLUP") => void;
@@ -41,10 +50,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   maxDistance: 20,
   isConnected: false,
   isThrowing: false,
-  powerRatio: 0,
   socket: null,
   lastCaughtItem: null,
   errorNotice: null,
+
+  playerPosition: { x: 0, y: 0, z: 0 },
+  carriedAnimal: null,
+  isInThrowZone: true,
+  isInPenZone: false,
+  penAnimals: [],
+  totalMps: 0,
 
   connect: () => {
     const wsUrl = "ws://localhost:3444/ws";
@@ -82,11 +97,40 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
           }
 
+          if (message.data.penState) {
+            set({
+              penAnimals: message.data.penState.animals || [],
+              totalMps: message.data.penState.totalMps || 0,
+            });
+          }
+
+          // Tangkapan Berhasil: Otomatis masuk ke status Carry
           if (message.data.caughtItem) {
             const item = message.data.caughtItem as InventoryItem;
             set((state) => ({
               lastCaughtItem: item,
+              carriedAnimal: item,
               inventory: [item, ...state.inventory],
+              isThrowing: false,
+            }));
+          }
+
+          if (message.data.placedItem) {
+            set((state) => ({
+              carriedAnimal: null,
+              penAnimals: message.data.penState?.animals || state.penAnimals,
+              totalMps: message.data.penState?.totalMps || state.totalMps,
+              inventory: state.inventory.filter(
+                (i) => i.id !== state.carriedAnimal?.id,
+              ),
+            }));
+          }
+
+          if (message.data.coinsEarned !== undefined) {
+            set((state) => ({
+              player: state.player
+                ? { ...state.player, coins: message.data.newBalance }
+                : null,
             }));
           }
 
@@ -95,6 +139,7 @@ export const useGameStore = create<GameState>((set, get) => ({
               player: state.player
                 ? { ...state.player, coins: message.data.newBalance }
                 : null,
+              carriedAnimal: null,
               inventory: [],
             }));
           }
@@ -125,7 +170,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             }));
           }
         } else if (message.error) {
-          set({ errorNotice: message.error.message });
+          set({ errorNotice: message.error.message, isThrowing: false });
         }
       } catch (err) {
         console.error("WebSocket parse error:", err);
@@ -137,21 +182,48 @@ export const useGameStore = create<GameState>((set, get) => ({
     };
   },
 
-  setPowerRatio: (ratio: number) => {
-    set({ powerRatio: sanitizeThrowPower(ratio) });
+  setPlayerPosition: (pos: { x: number; y: number; z: number }) => {
+    const dxPad = pos.x - CAPS.THROW_PAD_CENTER_X;
+    const dzPad = pos.z - CAPS.THROW_PAD_CENTER_Z;
+    const inThrow =
+      dxPad * dxPad + dzPad * dzPad <=
+      CAPS.THROW_PAD_RADIUS * CAPS.THROW_PAD_RADIUS;
+
+    const dxPen = pos.x - CAPS.PEN_CENTER_X;
+    const dzPen = pos.z - CAPS.PEN_CENTER_Z;
+    const inPen =
+      dxPen * dxPen + dzPen * dzPen <= CAPS.PEN_RADIUS * CAPS.PEN_RADIUS;
+
+    set({
+      playerPosition: pos,
+      isInThrowZone: inThrow,
+      isInPenZone: inPen,
+    });
   },
 
   setSelectedZoneId: (zoneId: number) => {
     set({ selectedZoneId: zoneId });
   },
 
-  throwFood: (targetAnimalId?: number) => {
-    const { socket, isConnected, maxDistance, powerRatio, selectedZoneId } =
-      get();
+  // Lempar Makanan Mode Klik (Langsung sesuai target jarak)
+  throwFoodAtDistance: (distance: number, targetAnimalId?: number) => {
+    const {
+      socket,
+      isConnected,
+      maxDistance,
+      selectedZoneId,
+      isInThrowZone,
+      playerPosition,
+    } = get();
     if (!socket || !isConnected) return;
 
-    const safeRatio = sanitizeThrowPower(powerRatio);
-    const distance = Number((safeRatio * maxDistance).toFixed(2));
+    if (!isInThrowZone) {
+      set({ errorNotice: "Masuk ke dalam Throw Pad untuk melempar makanan!" });
+      return;
+    }
+
+    const safeDistance = Math.min(maxDistance, Math.max(1.0, distance));
+    set({ isThrowing: true });
 
     socket.send(
       JSON.stringify({
@@ -159,9 +231,49 @@ export const useGameStore = create<GameState>((set, get) => ({
         nonce: actionNonce++,
         payload: {
           zoneId: selectedZoneId,
-          distance,
+          distance: safeDistance,
           targetAnimalId: targetAnimalId || 101,
+          playerPos: { x: playerPosition.x, z: playerPosition.z },
         },
+      }),
+    );
+  },
+
+  // Menaruh Hewan yang Sedang Dipegang ke Kandang
+  placeInPen: () => {
+    const { socket, isConnected, carriedAnimal, isInPenZone, playerPosition } =
+      get();
+    if (!socket || !isConnected || !carriedAnimal) return;
+
+    if (!isInPenZone) {
+      set({
+        errorNotice: "Bawa hewan mendekat ke pagar kandang untuk menaruhnya!",
+      });
+      return;
+    }
+
+    socket.send(
+      JSON.stringify({
+        action: "PLACE_IN_PEN",
+        nonce: actionNonce++,
+        payload: {
+          inventoryItemId: carriedAnimal.id,
+          playerPos: { x: playerPosition.x, z: playerPosition.z },
+        },
+      }),
+    );
+  },
+
+  // Klaim passive MPS
+  claimPenMps: () => {
+    const { socket, isConnected } = get();
+    if (!socket || !isConnected) return;
+
+    socket.send(
+      JSON.stringify({
+        action: "CLAIM_PEN_MPS",
+        nonce: actionNonce++,
+        payload: {},
       }),
     );
   },

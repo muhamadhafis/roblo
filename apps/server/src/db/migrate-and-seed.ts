@@ -75,6 +75,20 @@ export async function migrateAndSeed() {
   `;
   await queryClient`CREATE INDEX IF NOT EXISTS idx_ledger_player ON currency_ledger(player_id, created_at DESC);`;
 
+  // 7. Tabel pen_animals & kolom players
+  await queryClient`ALTER TABLE players ADD COLUMN IF NOT EXISTS last_pen_mps_claim TIMESTAMPTZ DEFAULT NOW();`;
+  await queryClient`
+    CREATE TABLE IF NOT EXISTS pen_animals (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+      animal_id INT NOT NULL REFERENCES animals(id),
+      grade VARCHAR(16) NOT NULL,
+      mps_rate NUMERIC(18, 2) NOT NULL,
+      placed_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `;
+  await queryClient`CREATE INDEX IF NOT EXISTS idx_pen_player ON pen_animals(player_id);`;
+
   console.log("Tabel database selesai dibuat.");
 
   // 7. Seed Animals Catalog
