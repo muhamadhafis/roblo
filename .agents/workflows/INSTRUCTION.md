@@ -58,7 +58,7 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
 
 ---
 
-## Phase 2C: Kontrol Karakter Roblox, Throw Pad, Carry Hewan, dan Kandang Pasif (MPS)
+## Phase 2C: Kontrol Karakter Roblox, Throw Pad, Carry Hewan, dan Kandang Pasif (MPS) [COMPLETED]
 - **Step 2C.1**: Perbarui shared package (`packages/shared`): konstanta radius zona, formula MPS, kapasitas kandang.
 - **Step 2C.2**: Perbarui schema database & migrasi tabel `pen_animals` pada PostgreSQL port 5444.
 - **Step 2C.3**: Implementasi `PenService` pada backend Bun (`apps/server`) dengan transaksi ACID dan validasi kedekatan proximity anti-cheat.
@@ -68,4 +68,27 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
 - **Step 2C.7**: Buat automated tests:
   - Unit test alur bisnis MPS (`tests/unit/pen-mps.test.ts`).
   - Security test anti-cheat proximity spoofing (`tests/security/pen-proximity-spoofing.security.test.ts`).
-- **Step 2C.8**: Jalankan seluruh pengujian, audit formatter Prettier, dan verifikasi.
+- **Step 2C.8**: Jalankan seluruh pengujian, audit formatter Prettier, dan verifikasi (50 tests pass).
+
+---
+
+## Phase 3: Web3 & Base Sepolia Testnet Microtransactions [PENDING / ON-HOLD]
+*Rujuk panduan teknis mendalam di `docs/HANDOVER_NOTES.md` untuk melanjutkan tahap ini.*
+- **Step 3.1**: Buat smart contract `GameVault.sol` (escrow deposit USDC & penarikan dengan verifikasi EIP-712 typed structured data).
+- **Step 3.2**: Setup modul `apps/server/src/modules/web3/eip712-signer.ts` dengan cryptographic voucher signer.
+- **Step 3.3**: Hubungkan Viem / Wagmi v2 client pada `apps/web` ke Base Sepolia (`Chain ID: 84532`).
+- **Step 3.4**: Buat modal Faucet Helper UI & katalog in-game booster shop.
+- **Step 3.5**: Buat unit test cryptographic voucher dan security test signature tampering & replay attacks.
+
+---
+
+## Phase 4: Real-Time Leaderboards (Redis ZSET) & Album Bestiary [PENDING]
+- **Step 4.1**: Setup 3 papan peringkat global Redis Sorted Sets (`lb:total_catches`, `lb:total_earned`, `lb:luckiest_catch`).
+- **Step 4.2**: Buat modal Bestiary Album UI membaca bitmask 5-bit dari PostgreSQL dengan sistem reward +5% Luck.
+- **Step 4.3**: Buat automated unit tests & security checks untuk skor leaderboard.
+
+---
+
+## Phase 5: Visual Polish, Partikel Tiga Dimensi, & Audio SFX [PENDING]
+- **Step 5.1**: Integrasi SFX audio (Web Audio API) untuk lemparan, tangkapan, denting koin, dan penempatan hewan di kandang.
+- **Step 5.2**: Efek partikel pendaran visual saat mendapatkan hewan grade langka (Emas, Berlian, Rubi).
