@@ -29,6 +29,18 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
   - `tests/security/double-sell.security.test.ts`
   - `tests/security/eip712-vault.security.test.ts`
 
-## Step 6: Verifikasi & Audit Kualitas
+## Step 6: Verifikasi & Audit Kualitas [COMPLETED]
 - Jalankan `bun test` untuk memverifikasi 100% kelulusan test suite.
 - Jalankan docker container dan pastikan PostgreSQL & Redis terkoneksi.
+
+---
+
+## Phase 2A: Persistensi Database (PostgreSQL 16 & Redis 7)
+- **Step 2A.1**: Install dependencies persistensi (`drizzle-orm`, `postgres`, `ioredis`, `drizzle-kit`).
+- **Step 2A.2**: Definisikan schema Drizzle (`apps/server/src/db/schema.ts`) mencakup `players`, `animals`, `player_inventory`, `player_bestiary`, dan `currency_ledger`.
+- **Step 2A.3**: Setup koneksi database PostgreSQL (port 5444) dan Redis (port 6444).
+- **Step 2A.4**: Migrasi tabel dan inisialisasi seed katalog hewan Zona 1 & 2 (`apps/server/src/db/seed.ts`).
+- **Step 2A.5**: Implementasi service repositori dengan transaksi ACID dan double-entry ledger.
+- **Step 2A.6**: Hubungkan handler WebSocket server ke repositori PostgreSQL & Redis.
+- **Step 2A.7**: Buat automated tests alur bisnis (`tests/integration/*.test.ts`) dan security tests (`tests/security/db-*.security.test.ts`).
+- **Step 2A.8**: Jalankan pengujian menyeluruh, audit formatter Prettier, dan verifikasi status.

@@ -24,3 +24,9 @@
   - `MaxAFKTime`: Max 43.200 detik (12 jam)
   - `InventoryCapacity`: Max 200 slot
 - **Konsekuensi**: Seluruh fungsi mutasi state wajib melakukan pengecekan boundary clamp.
+
+## ADR-004: Pemilihan Drizzle ORM & Driver Postgres.js untuk Bun
+- **Status**: Diterima
+- **Konteks**: Diperlukan ORM yang ringan, zero-overhead, dan mendukung transaksi ACID dengan row-level lock (`SELECT ... FOR UPDATE`) pada PostgreSQL 16 di runtime Bun.
+- **Keputusan**: Menggunakan `drizzle-orm` dengan driver `postgres` (porsager).
+- **Konsekuensi**: Menghilangkan latency query builder dan memastikan type safety terhubung langsung dengan schema.
