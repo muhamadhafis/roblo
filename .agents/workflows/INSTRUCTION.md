@@ -35,7 +35,7 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
 
 ---
 
-## Phase 2A: Persistensi Database (PostgreSQL 16 & Redis 7)
+## Phase 2A: Persistensi Database (PostgreSQL 16 & Redis 7) [COMPLETED]
 - **Step 2A.1**: Install dependencies persistensi (`drizzle-orm`, `postgres`, `ioredis`, `drizzle-kit`).
 - **Step 2A.2**: Definisikan schema Drizzle (`apps/server/src/db/schema.ts`) mencakup `players`, `animals`, `player_inventory`, `player_bestiary`, dan `currency_ledger`.
 - **Step 2A.3**: Setup koneksi database PostgreSQL (port 5444) dan Redis (port 6444).
@@ -44,3 +44,14 @@ Protokol eksekusi bertahap untuk pengembangan NomNom Throw:
 - **Step 2A.6**: Hubungkan handler WebSocket server ke repositori PostgreSQL & Redis.
 - **Step 2A.7**: Buat automated tests alur bisnis (`tests/integration/*.test.ts`) dan security tests (`tests/security/db-*.security.test.ts`).
 - **Step 2A.8**: Jalankan pengujian menyeluruh, audit formatter Prettier, dan verifikasi status.
+
+---
+
+## Phase 2B: Frontend 3D Procedural-First (`apps/web`)
+- **Step 2B.1**: Inisialisasi struktur workspace `apps/web` dengan Vite, React 18/19, Three.js, R3F, Drei, dan Zustand.
+- **Step 2B.2**: Implementasi `GradeMaterialFactory` untuk 5 grade material (Normal, Besar, Emas, Berlian, Rubi).
+- **Step 2B.3**: Bangun komponen primitif prosedural hewan Zona 1 (`ProceduralChicken`, `ProceduralRabbit`, `ProceduralSheep`) dan makanan (`ProceduralBurger`).
+- **Step 2B.4**: Implementasi Adapter Pattern (`EntityRenderer` & `ProceduralRegistry`) dengan toggle `ASSET_SOURCE_MODE`.
+- **Step 2B.5**: Buat HUD Power Bar dan R3F Game Canvas dengan controller lempar terhubung ke WebSocket port 3444.
+- **Step 2B.6**: Buat automated unit tests (`tests/unit/grade-materials.test.ts`, `tests/unit/procedural-registry.test.ts`) dan security test (`tests/security/client-input-sanitizer.security.test.ts`).
+- **Step 2B.7**: Jalankan seluruh rangkaian test suite, format kode, dan verifikasi hasil.

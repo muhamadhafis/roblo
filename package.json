@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "server:dev": "bun --watch apps/server/src/index.ts",
+    "web:dev": "bun --filter @nomnom/web dev",
     "db:seed": "bun apps/server/src/db/migrate-and-seed.ts",
     "test": "bun test",
     "test:unit": "bun test tests/unit",
@@ -17,7 +18,9 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/three": "^0.170.0",
     "drizzle-orm": "^0.38.4",
-    "postgres": "^3.4.5"
+    "postgres": "^3.4.5",
+    "three": "^0.170.0"
   }
 }

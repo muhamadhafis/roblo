@@ -8,8 +8,9 @@
 
 ## ADR-002: Port Service Kontainer & Dockerisasi
 - **Status**: Diterima
-- **Konteks**: Port default (5432, 6379) berpotensi tabrakan dengan kontainer atau layanan host yang sudah aktif.
+- **Konteks**: Port default (3000, 5432, 6379) berpotensi tabrakan dengan kontainer atau layanan host yang sudah aktif.
 - **Keputusan**: 
+  - Frontend Web (Vite): Port `3445`
   - Backend Bun: Port `3444`
   - PostgreSQL 16: Port `5444:5432`
   - Redis 7: Port `6444:6379`
